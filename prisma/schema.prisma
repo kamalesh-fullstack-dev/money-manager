@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum AccountType {
+  CASH
+  BANK
+  CREDIT_CARD
+  WALLET
+  OTHER
+}
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// Mirrors a row in Supabase's auth.users table (1:1). Supabase manages
+// auth.users itself; this table holds app-specific profile data and is
+// the parent for all other user-owned data below.
+model Profile {
+  id        String   @id @db.Uuid
+  email     String   @unique
+  name      String?
+  currency  String   @default("USD")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+  recurring    RecurringTransaction[]
+
+  @@map("profiles")
+}
+
+model Account {
+  id              String      @id @default(uuid()) @db.Uuid
+  userId          String      @map("user_id") @db.Uuid
+  name            String
+  type            AccountType @default(CASH)
+  startingBalance Decimal     @default(0) @map("starting_balance") @db.Decimal(14, 2)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  profile               Profile                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions          Transaction[]
+  recurringTransactions RecurringTransaction[]
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Category {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  name      String
+  type      TransactionType
+  color     String           @default("#6366f1")
+  icon      String?
+  isDefault Boolean          @default(false) @map("is_default")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  profile             Profile                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions        Transaction[]
+  budgets              Budget[]
+  recurringTransactions RecurringTransaction[]
+
+  @@unique([userId, name, type])
+  @@index([userId])
+  @@map("categories")
+}
+
+model Transaction {
+  id         String           @id @default(uuid()) @db.Uuid
+  userId     String           @map("user_id") @db.Uuid
+  accountId  String           @map("account_id") @db.Uuid
+  categoryId String?          @map("category_id") @db.Uuid
+  type       TransactionType
+  amount     Decimal          @db.Decimal(14, 2)
+  date       DateTime         @db.Date
+  note       String?
+  tags       String[]         @default([])
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  profile  Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account  Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, date])
+  @@index([accountId])
+  @@index([categoryId])
+  @@map("transactions")
+}
+
+model Budget {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String       @map("user_id") @db.Uuid
+  categoryId String      @map("category_id") @db.Uuid
+  amount    Decimal      @db.Decimal(14, 2)
+  period    BudgetPeriod @default(MONTHLY)
+  rollover  Boolean      @default(false)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  profile  Profile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId, period])
+  @@index([userId])
+  @@map("budgets")
+}
+
+model RecurringTransaction {
+  id           String           @id @default(uuid()) @db.Uuid
+  userId       String           @map("user_id") @db.Uuid
+  accountId    String           @map("account_id") @db.Uuid
+  categoryId   String?          @map("category_id") @db.Uuid
+  type         TransactionType
+  amount       Decimal          @db.Decimal(14, 2)
+  note         String?
+  intervalDays Int              @map("interval_days")
+  startDate    DateTime         @map("start_date") @db.Date
+  nextRunDate  DateTime         @map("next_run_date") @db.Date
+  endDate      DateTime?        @map("end_date") @db.Date
+  isActive     Boolean          @default(true) @map("is_active")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  profile  Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account  Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@map("recurring_transactions")
+}
