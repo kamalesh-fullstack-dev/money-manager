@@ -1,5 +1,6 @@
 import { getAuthedUser } from "@/lib/auth";
 import { ensureProfile } from "@/lib/ensure-profile";
+import { processDueRecurringTransactions } from "@/lib/recurring";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { UserMenu } from "@/components/dashboard/user-menu";
@@ -12,6 +13,7 @@ export default async function DashboardLayout({
   const user = await getAuthedUser();
 
   await ensureProfile(user.id, user.email!);
+  await processDueRecurringTransactions(user.id);
 
   return (
     <div className="min-h-svh md:grid md:grid-cols-[220px_1fr]">

@@ -129,20 +129,20 @@ model Budget {
 }
 
 model RecurringTransaction {
-  id           String           @id @default(uuid()) @db.Uuid
-  userId       String           @map("user_id") @db.Uuid
-  accountId    String           @map("account_id") @db.Uuid
-  categoryId   String?          @map("category_id") @db.Uuid
-  type         TransactionType
-  amount       Decimal          @db.Decimal(14, 2)
-  note         String?
-  intervalDays Int              @map("interval_days")
-  startDate    DateTime         @map("start_date") @db.Date
-  nextRunDate  DateTime         @map("next_run_date") @db.Date
-  endDate      DateTime?        @map("end_date") @db.Date
-  isActive     Boolean          @default(true) @map("is_active")
-  createdAt    DateTime         @default(now()) @map("created_at")
-  updatedAt    DateTime         @updatedAt @map("updated_at")
+  id          String           @id @default(uuid()) @db.Uuid
+  userId      String           @map("user_id") @db.Uuid
+  accountId   String           @map("account_id") @db.Uuid
+  categoryId  String?          @map("category_id") @db.Uuid
+  type        TransactionType
+  amount      Decimal          @db.Decimal(14, 2)
+  note        String?
+  frequency   BudgetPeriod     @default(MONTHLY)
+  startDate   DateTime         @map("start_date") @db.Date
+  nextRunDate DateTime         @map("next_run_date") @db.Date
+  endDate     DateTime?        @map("end_date") @db.Date
+  isActive    Boolean          @default(true) @map("is_active")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
 
   profile  Profile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   account  Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)

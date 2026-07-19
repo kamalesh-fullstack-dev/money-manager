@@ -44,3 +44,32 @@ export function getPreviousPeriodRange(period: Period, referenceDate: Date = new
   dayBeforeStart.setUTCDate(dayBeforeStart.getUTCDate() - 1);
   return getPeriodRange(period, dayBeforeStart);
 }
+
+// Calendar-aware date stepping, `count` periods forward (negative to step
+// back). Unlike getPeriodRange, this does NOT snap to a bucket boundary -
+// it preserves the day-of-month/month-of-year of `date`, which is what a
+// recurring transaction's due date needs (e.g. "the 15th of every
+// month"), clamping to the last valid day when a month is shorter (Jan 31
+// + 1 month -> Feb 28/29, not an overflowed "Mar 3").
+export function addPeriods(period: Period, date: Date, count: number): Date {
+  const d = atUtcMidnight(date);
+
+  if (period === "WEEKLY") {
+    d.setUTCDate(d.getUTCDate() + count * 7);
+    return d;
+  }
+
+  if (period === "YEARLY") {
+    const day = d.getUTCDate();
+    d.setUTCFullYear(d.getUTCFullYear() + count, d.getUTCMonth(), 1);
+    const daysInMonth = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+    d.setUTCDate(Math.min(day, daysInMonth));
+    return d;
+  }
+
+  const day = d.getUTCDate();
+  d.setUTCFullYear(d.getUTCFullYear(), d.getUTCMonth() + count, 1);
+  const daysInMonth = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(day, daysInMonth));
+  return d;
+}

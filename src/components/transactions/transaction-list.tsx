@@ -1,6 +1,7 @@
 "use client";
 
-import { Pencil, Plus } from "lucide-react";
+import Link from "next/link";
+import { Pencil, Plus, Repeat } from "lucide-react";
 import { deleteTransaction } from "@/app/(dashboard)/transactions/actions";
 import {
   TransactionForm,
@@ -39,7 +40,13 @@ export function TransactionList({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" asChild>
+          <Link href="/transactions/recurring">
+            <Repeat className="size-4" />
+            Recurring
+          </Link>
+        </Button>
         <TransactionForm
           accounts={accounts}
           categories={categories}

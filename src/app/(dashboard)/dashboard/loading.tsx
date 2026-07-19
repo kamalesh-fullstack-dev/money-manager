@@ -25,6 +25,19 @@ export default function DashboardLoading() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         {[0, 1].map((i) => (
+          <Card key={`chart-${i}`}>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="mx-auto h-56 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {[0, 1].map((i) => (
           <Card key={i}>
             <CardHeader>
               <Skeleton className="h-5 w-32" />

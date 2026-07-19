@@ -1,7 +1,8 @@
 "use client";
 
+import { useTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -24,6 +25,7 @@ export function TransactionFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [pending, startTransition] = useTransition();
 
   function setParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -32,7 +34,9 @@ export function TransactionFilters({
     } else {
       params.delete(key);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
   }
 
   function shiftMonth(delta: number) {
@@ -45,19 +49,31 @@ export function TransactionFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="flex items-center gap-1">
-        <Button variant="outline" size="icon-sm" onClick={() => shiftMonth(-1)}>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          disabled={pending}
+          onClick={() => shiftMonth(-1)}
+        >
           <ChevronLeft className="size-4" />
         </Button>
-        <span className="min-w-32 text-center text-sm font-medium">
+        <span className="flex min-w-32 items-center justify-center gap-1.5 text-center text-sm font-medium">
           {formatMonthLabel(month)}
+          {pending && <Loader2 className="size-3.5 animate-spin text-muted-foreground" />}
         </span>
-        <Button variant="outline" size="icon-sm" onClick={() => shiftMonth(1)}>
+        <Button
+          variant="outline"
+          size="icon-sm"
+          disabled={pending}
+          onClick={() => shiftMonth(1)}
+        >
           <ChevronRight className="size-4" />
         </Button>
       </div>
 
       <Select
         value={searchParams.get("accountId") ?? "all"}
+        disabled={pending}
         onValueChange={(v) => setParam("accountId", v === "all" ? null : v)}
       >
         <SelectTrigger className="w-40">
@@ -75,6 +91,7 @@ export function TransactionFilters({
 
       <Select
         value={searchParams.get("categoryId") ?? "all"}
+        disabled={pending}
         onValueChange={(v) => setParam("categoryId", v === "all" ? null : v)}
       >
         <SelectTrigger className="w-40">
