@@ -50,7 +50,7 @@ export function SignupForm() {
         <CardDescription>Start tracking your money</CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} className="flex flex-col gap-8">
           <CardContent className="flex flex-col gap-4">
             {state?.error && (
               <p className="text-sm text-destructive">{state.error}</p>

@@ -48,7 +48,7 @@ export function LoginForm({ checkEmail }: { checkEmail: boolean }) {
         <CardDescription>Welcome back to Money Manager</CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} className="flex flex-col gap-8">
           <CardContent className="flex flex-col gap-4">
             {checkEmail && (
               <p className="text-sm text-muted-foreground">

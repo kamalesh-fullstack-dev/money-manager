@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthedUser } from "@/lib/auth";
 import { ensureProfile } from "@/lib/ensure-profile";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
@@ -10,28 +9,27 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Middleware already redirects unauthenticated requests away from these
-  // routes; this is a defense-in-depth check for direct server rendering.
-  if (!user) {
-    redirect("/login");
-  }
+  const user = await getAuthedUser();
 
   await ensureProfile(user.id, user.email!);
 
   return (
     <div className="min-h-svh md:grid md:grid-cols-[220px_1fr]">
-      <aside className="hidden border-r p-4 md:flex md:flex-col md:gap-4">
-        <span className="px-3 text-lg font-semibold">Money Manager</span>
+      <aside className="hidden flex-col gap-4 border-r border-sidebar-border bg-sidebar p-4 text-sidebar-foreground md:flex">
+        <div className="flex flex-col gap-3">
+          <span className="px-1 font-display text-xl font-extrabold tracking-wide text-primary uppercase">
+            Money Manager
+          </span>
+          <div className="hazard-stripe h-1.5 w-full" />
+        </div>
         <SidebarNav />
       </aside>
       <div className="flex flex-col">
+        <div className="hazard-stripe h-1.5 w-full" />
         <header className="flex items-center justify-between border-b px-4 py-3 md:justify-end">
-          <span className="text-lg font-semibold md:hidden">Money Manager</span>
+          <span className="font-display text-xl font-extrabold tracking-wide text-primary uppercase md:hidden">
+            Money Manager
+          </span>
           <UserMenu email={user.email!} />
         </header>
         <main className="flex-1 p-4 pb-20 md:pb-4">{children}</main>

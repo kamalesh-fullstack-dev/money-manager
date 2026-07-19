@@ -1,8 +1,19 @@
-export default function AccountsPage() {
+import { getAuthedUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getAccountsWithBalances } from "@/lib/balances";
+import { AccountList } from "@/components/accounts/account-list";
+
+export default async function AccountsPage() {
+  const user = await getAuthedUser();
+  const [accounts, profile] = await Promise.all([
+    getAccountsWithBalances(user.id),
+    prisma.profile.findUnique({ where: { id: user.id } }),
+  ]);
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-2xl font-semibold">Accounts</h1>
-      <p className="text-sm text-muted-foreground">Coming in the next phase.</p>
+      <AccountList accounts={accounts} currency={profile?.currency ?? "USD"} />
     </div>
   );
 }
