@@ -2,20 +2,15 @@ import Link from "next/link";
 import { getAuthedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAccountsWithBalances } from "@/lib/balances";
+import { getPeriodRange } from "@/lib/date-ranges";
 import { formatCurrency, formatMonthLabel } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-function currentMonthRange() {
-  const now = new Date();
-  const start = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
-  const end = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 1));
-  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  return { start, end, month };
-}
-
 export default async function DashboardPage() {
   const user = await getAuthedUser();
-  const { start, end, month } = currentMonthRange();
+  const now = new Date();
+  const { start, end } = getPeriodRange("MONTHLY", now);
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
   const [profile, accounts, monthSums, recentTransactions] = await Promise.all([
     prisma.profile.findUnique({ where: { id: user.id } }),

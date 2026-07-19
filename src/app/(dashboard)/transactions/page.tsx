@@ -1,18 +1,12 @@
 import { getAuthedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPeriodRange } from "@/lib/date-ranges";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { TransactionList, type TransactionRow } from "@/components/transactions/transaction-list";
 
 function currentMonth() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function monthRange(month: string) {
-  const [year, m] = month.split("-").map(Number);
-  const start = new Date(Date.UTC(year, m - 1, 1));
-  const end = new Date(Date.UTC(year, m, 1));
-  return { start, end };
 }
 
 function toDateInputValue(date: Date) {
@@ -27,7 +21,8 @@ export default async function TransactionsPage({
   const user = await getAuthedUser();
   const params = await searchParams;
   const month = params.month ?? currentMonth();
-  const { start, end } = monthRange(month);
+  const [year, m] = month.split("-").map(Number);
+  const { start, end } = getPeriodRange("MONTHLY", new Date(Date.UTC(year, m - 1, 1)));
 
   const [transactions, accounts, categories, profile] = await Promise.all([
     prisma.transaction.findMany({
