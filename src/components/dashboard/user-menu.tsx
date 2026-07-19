@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import { LogOut } from "lucide-react";
 import { logout } from "@/app/(auth)/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -14,6 +15,7 @@ import {
 
 export function UserMenu({ email }: { email: string }) {
   const initial = email.charAt(0).toUpperCase();
+  const [pending, startTransition] = useTransition();
 
   return (
     <DropdownMenu>
@@ -26,13 +28,12 @@ export function UserMenu({ email }: { email: string }) {
       <DropdownMenuContent align="end">
         <DropdownMenuLabel className="truncate">{email}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <form action={logout} className="w-full">
-            <button type="submit" className="flex w-full items-center gap-2">
-              <LogOut className="size-4" />
-              Log out
-            </button>
-          </form>
+        <DropdownMenuItem
+          disabled={pending}
+          onSelect={() => startTransition(() => logout())}
+        >
+          <LogOut className="size-4" />
+          {pending ? "Logging out..." : "Log out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
