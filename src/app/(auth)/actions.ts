@@ -1,11 +1,24 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { ensureProfile } from "@/lib/ensure-profile";
 import { loginSchema, signupSchema } from "@/lib/validations/auth";
 
 export type AuthActionState = { error: string } | null;
+
+// Supabase's email-confirmation redirect defaults to the project's "Site
+// URL" (localhost:3000 until changed in the dashboard). Passing this
+// explicitly means confirmation links work correctly regardless of that
+// setting, as long as the target origin is also in Supabase's Redirect
+// URLs allowlist.
+async function getOrigin() {
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const protocol = h.get("x-forwarded-proto") ?? "http";
+  return `${protocol}://${host}`;
+}
 
 export async function login(
   _prevState: AuthActionState,
@@ -46,7 +59,10 @@ export async function signup(
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: { data: { name: parsed.data.name } },
+    options: {
+      data: { name: parsed.data.name },
+      emailRedirectTo: `${await getOrigin()}/login`,
+    },
   });
   if (error) {
     return { error: error.message };
