@@ -47,11 +47,10 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Fixed racing livery theme: light "timing screen" background with
-   F1 red / black accents. Not toggled by prefers-color-scheme - the
-   app has no light/dark mode switch, this IS the theme. */
-:root,
-.dark {
+/* Racing livery theme: F1 red / black accents in both modes. The
+   sidebar ("garage panel") stays dark in both light and dark mode by
+   design - only the main content area actually flips. */
+:root {
   --radius: 0.25rem;
   --background: oklch(0.97 0.002 30);
   --foreground: oklch(0.145 0 0);
@@ -84,6 +83,41 @@
   --sidebar-accent-foreground: oklch(0.97 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.55 0.22 27);
+}
+
+.dark {
+  --radius: 0.25rem;
+  --background: oklch(0.16 0 0);
+  --foreground: oklch(0.96 0 0);
+  --card: oklch(0.2 0.006 30);
+  --card-foreground: oklch(0.96 0 0);
+  --popover: oklch(0.2 0.006 30);
+  --popover-foreground: oklch(0.96 0 0);
+  --primary: oklch(0.58 0.22 27);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.26 0.006 30);
+  --secondary-foreground: oklch(0.96 0 0);
+  --muted: oklch(0.26 0.006 30);
+  --muted-foreground: oklch(0.65 0.01 30);
+  --accent: oklch(0.3 0.04 27);
+  --accent-foreground: oklch(0.96 0 0);
+  --destructive: oklch(0.6 0.22 27);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.58 0.22 27);
+  --chart-1: oklch(0.58 0.22 27);
+  --chart-2: oklch(0.75 0 0);
+  --chart-3: oklch(0.7 0.18 40);
+  --chart-4: oklch(0.5 0 0);
+  --chart-5: oklch(0.35 0 0);
+  --sidebar: oklch(0.1 0 0);
+  --sidebar-foreground: oklch(0.96 0 0);
+  --sidebar-primary: oklch(0.58 0.22 27);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.22 0 0);
+  --sidebar-accent-foreground: oklch(0.96 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.58 0.22 27);
 }
 
 @layer base {
@@ -120,5 +154,26 @@
   /* Angular "name plate" block, like F1 broadcast driver tags */
   .plate {
     clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  }
+
+  /* HUD telemetry-panel card: clipped top-right corner (matches the
+     angular cut on buttons/name-plates elsewhere), plus a faint glow
+     instead of a flat shadow. */
+  .hud-card {
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--primary) 12%, transparent),
+      0 8px 24px -8px color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+  .hud-card:hover {
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, var(--primary) 25%, transparent),
+      0 10px 30px -6px color-mix(in oklch, var(--primary) 28%, transparent);
+  }
+
+  /* Side drawer: glowing edge instead of a flat drop shadow */
+  .hud-drawer {
+    box-shadow: -16px 0 40px -14px color-mix(in oklch, var(--primary) 30%, transparent);
   }
 }

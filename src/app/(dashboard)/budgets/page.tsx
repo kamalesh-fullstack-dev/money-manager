@@ -20,57 +20,79 @@ export default async function BudgetsPage() {
     prisma.profile.findUnique({ where: { id: user.id } }),
   ]);
 
-  const rows: BudgetRow[] = await Promise.all(
-    budgets.map(async (budget) => {
-      const period = budget.period as Period;
-      const { start, end } = getPeriodRange(period, now);
-      const spentAgg = await prisma.transaction.aggregate({
-        where: {
-          userId: user.id,
-          categoryId: budget.categoryId,
-          type: "EXPENSE",
-          date: { gte: start, lt: end },
-        },
-        _sum: { amount: true },
-      });
-      const spent = Number(spentAgg._sum.amount ?? 0);
-      const amount = Number(budget.amount);
+  // Fetch every budgeted category's relevant transactions in one query and
+  // sum them in JS, rather than running 1-2 aggregate queries per budget
+  // (2N+ round-trips to the DB) - that N+1 pattern was making this page
+  // slow for the same reason the dashboard trend chart was.
+  const categoryIds = [...new Set(budgets.map((b) => b.categoryId))];
 
-      let effectiveLimit = amount;
-      if (budget.rollover) {
-        const prevRange = getPreviousPeriodRange(period, now);
-        const prevSpentAgg = await prisma.transaction.aggregate({
+  let rangeStart: Date | null = null;
+  let rangeEnd: Date | null = null;
+  for (const budget of budgets) {
+    const period = budget.period as Period;
+    const { start, end } = getPeriodRange(period, now);
+    if (!rangeStart || start < rangeStart) rangeStart = start;
+    if (!rangeEnd || end > rangeEnd) rangeEnd = end;
+    if (budget.rollover) {
+      const prev = getPreviousPeriodRange(period, now);
+      if (prev.start < rangeStart) rangeStart = prev.start;
+    }
+  }
+
+  const relevantTransactions =
+    categoryIds.length > 0 && rangeStart && rangeEnd
+      ? await prisma.transaction.findMany({
           where: {
             userId: user.id,
-            categoryId: budget.categoryId,
             type: "EXPENSE",
-            date: { gte: prevRange.start, lt: prevRange.end },
+            categoryId: { in: categoryIds },
+            date: { gte: rangeStart, lt: rangeEnd },
           },
-          _sum: { amount: true },
-        });
-        const prevSpent = Number(prevSpentAgg._sum.amount ?? 0);
-        effectiveLimit += Math.max(0, amount - prevSpent);
-      }
+          select: { categoryId: true, date: true, amount: true },
+        })
+      : [];
 
-      return {
-        id: budget.id,
-        categoryId: budget.categoryId,
-        categoryName: budget.category.name,
-        categoryColor: budget.category.color,
-        period,
-        amount,
-        rollover: budget.rollover,
-        effectiveLimit,
-        spent,
-      };
-    }),
-  );
+  function sumSpent(categoryId: string, start: Date, end: Date) {
+    let total = 0;
+    for (const t of relevantTransactions) {
+      if (t.categoryId === categoryId && t.date >= start && t.date < end) {
+        total += Number(t.amount);
+      }
+    }
+    return total;
+  }
+
+  const rows: BudgetRow[] = budgets.map((budget) => {
+    const period = budget.period as Period;
+    const { start, end } = getPeriodRange(period, now);
+    const spent = sumSpent(budget.categoryId, start, end);
+    const amount = Number(budget.amount);
+
+    let effectiveLimit = amount;
+    if (budget.rollover) {
+      const prevRange = getPreviousPeriodRange(period, now);
+      const prevSpent = sumSpent(budget.categoryId, prevRange.start, prevRange.end);
+      effectiveLimit += Math.max(0, amount - prevSpent);
+    }
+
+    return {
+      id: budget.id,
+      categoryId: budget.categoryId,
+      categoryName: budget.category.name,
+      categoryColor: budget.category.color,
+      period,
+      amount,
+      rollover: budget.rollover,
+      effectiveLimit,
+      spent,
+    };
+  });
 
   const categoryOptions = expenseCategories.map((c) => ({ id: c.id, name: c.name }));
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Budgets</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-wide uppercase">Budgets</h1>
       <BudgetList
         budgets={rows}
         categories={categoryOptions}

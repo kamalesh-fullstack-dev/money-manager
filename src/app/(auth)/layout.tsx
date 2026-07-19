@@ -1,10 +1,15 @@
+import { ThemeToggle } from "@/components/theme-toggle";
+
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-4">
+    <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 bg-background p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <span className="font-display text-3xl font-extrabold tracking-wide text-primary uppercase">
         Money Manager
       </span>

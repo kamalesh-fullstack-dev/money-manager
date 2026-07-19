@@ -125,7 +125,6 @@ export default async function DashboardPage() {
       <div>
         <h1 className="font-display text-3xl font-extrabold tracking-wide uppercase">Dashboard</h1>
         <p className="text-sm text-muted-foreground">{formatMonthLabel(month)}</p>
-        <div className="hazard-stripe mt-3 h-1.5 w-full" />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

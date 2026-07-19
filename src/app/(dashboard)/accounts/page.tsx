@@ -12,7 +12,7 @@ export default async function AccountsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Accounts</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-wide uppercase">Accounts</h1>
       <AccountList accounts={accounts} currency={profile?.currency ?? "USD"} />
     </div>
   );

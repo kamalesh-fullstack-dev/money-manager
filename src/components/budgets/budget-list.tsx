@@ -73,7 +73,7 @@ export function BudgetList({
           No budgets yet. Set a limit on an expense category to start tracking.
         </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {budgets.map((budget) => {
             const rawPercent =
               budget.effectiveLimit > 0

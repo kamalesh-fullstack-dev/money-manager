@@ -55,7 +55,9 @@ export default async function RecurringPage() {
           <ArrowLeft className="size-4" />
           Transactions
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold">Recurring</h1>
+        <h1 className="mt-1 font-display text-3xl font-extrabold tracking-wide uppercase">
+          Recurring
+        </h1>
       </div>
       <RecurringList
         items={rows}

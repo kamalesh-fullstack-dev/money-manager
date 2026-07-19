@@ -4,6 +4,7 @@ import { processDueRecurringTransactions } from "@/lib/recurring";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { UserMenu } from "@/components/dashboard/user-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default async function DashboardLayout({
   children,
@@ -32,7 +33,10 @@ export default async function DashboardLayout({
           <span className="font-display text-xl font-extrabold tracking-wide text-primary uppercase md:hidden">
             Money Manager
           </span>
-          <UserMenu email={user.email!} />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserMenu email={user.email!} />
+          </div>
         </header>
         <main className="flex-1 p-4 pb-20 md:pb-4">{children}</main>
       </div>

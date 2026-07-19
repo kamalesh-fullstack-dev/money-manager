@@ -16,7 +16,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+      <h1 className="font-display text-3xl font-extrabold tracking-wide uppercase">Settings</h1>
       <CurrencyForm currency={profile?.currency ?? "USD"} />
       <div className="flex items-center justify-between pt-2">
         <h2 className="text-lg font-medium">Categories</h2>
